@@ -1,0 +1,40 @@
+#Dependencies
+node_modules/
+
+#Env Variables
+.Env.env.local
+.env.development.local
+.env.production.local
+
+#Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+pnpm-debug.log*
+
+#   Build Output
+dist/
+build/
+coverage/
+
+#Vite
+.vite/
+
+#TypeScript
+*.tsbuildinfo
+
+#Prisma
+prisma/dev.debug
+prisma/dev.db-journal
+
+#OS Files
+.DS_Store
+Thumbs.db
+
+#VS Code
+.vscode/settings.json
+.vscode/launch.json
+
+#Misc
+*.swp
+*.swo

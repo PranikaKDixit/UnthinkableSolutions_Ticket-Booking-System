@@ -1,5 +1,7 @@
-import showRoutes from "./modules/shows/shows.routes";
+// Must be imported before Express is loaded anywhere so it can patch the Router
+// to forward async handler rejections to the error middleware.
 import "express-async-errors";
+import showRoutes from "./modules/shows/shows.routes";
   import express from "express";
   import cors from "cors";
   import helmet from "helmet";
@@ -9,6 +11,7 @@ import "express-async-errors";
   import authRoutes from "./modules/auth/auth.routes";
   import venueRoutes from "./modules/venues/venues.routes";
   import eventRoutes from "./modules/events/events.routes";
+  import bookingRoutes, { waitlistOfferRouter } from "./modules/bookings/bookings.routes";
   import { errorHandler } from "./middleware/error";
 
   const app = express();
@@ -27,7 +30,9 @@ import "express-async-errors";
   app.use("/auth", authRoutes);
   app.use("/venues", venueRoutes);
   app.use("/events", eventRoutes);
-app.use("/shows", showRoutes);
+  app.use("/shows", showRoutes);
+  app.use("/bookings", bookingRoutes);
+  app.use("/waitlist", waitlistOfferRouter);
 
   app.use(errorHandler);
 

@@ -21,6 +21,21 @@
     }
   }
 
+  // Like requireAuth but never rejects — attaches req.user when a valid cookie
+  // is present, otherwise continues anonymously. Used by the public seat map so
+  // it can flag "held by me" for logged-in customers.
+  export function optionalAuth(req: Request, _res: Response, next: NextFunction) {
+    const token = req.cookies?.token;
+    if (token) {
+      try {
+        req.user = verifyToken(token);
+      } catch {
+        /* ignore invalid token — treat as anonymous */
+      }
+    }
+    next();
+  }
+
   export function requireRole(...roles: string[]) {
     return (req: Request, res: Response, next: NextFunction) => {
       if (!req.user || !roles.includes(req.user.role)) {

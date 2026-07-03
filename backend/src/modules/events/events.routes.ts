@@ -1,7 +1,13 @@
  import { Router } from "express";
   import { requireAuth, requireRole } from "../../middleware/auth";
   import { createEventSchema } from "./events.schema";
-  import { createEvent, listEvents, getEvent } from "./events.service";
+  import {
+    createEvent,
+    listEvents,
+    getEvent,
+    listMyEvents,
+    getEventSummary,
+  } from "./events.service";
 
   const router = Router();
 
@@ -18,6 +24,18 @@
     const type = req.query.type as string | undefined;
     const events = await listEvents(type);
     res.json({ success: true, events });
+  });
+
+  // Organiser's own events — must be declared before "/:eventId"
+  router.get("/mine", requireAuth, requireRole("ORGANISER"), async (req, res) => {
+    const events = await listMyEvents(req.user!.userId);
+    res.json({ success: true, events });
+  });
+
+  // Revenue / booking summary for an event (organiser-only)
+  router.get("/:eventId/summary", requireAuth, requireRole("ORGANISER"), async (req, res) => {
+    const summary = await getEventSummary(req.user!.userId, req.params.eventId as string);
+    res.json({ success: true, summary });
   });
 
   // Public event detail

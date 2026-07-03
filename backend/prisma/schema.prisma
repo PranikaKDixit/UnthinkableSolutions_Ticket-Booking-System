@@ -174,7 +174,10 @@ model SeatCategory {
     status        WaitListStatus @default(WAITING)
     offerToken    String?        @unique // the time-limited link token
     offerExpiresAt DateTime?
+    offeredSeatId  String?        // ShowSeat reserved for this offer (while OFFERED)
     createdAt     DateTime       @default(now())
+
+    @@index([showId, categoryId, status, position])
   }
 
 

@@ -16,4 +16,22 @@ export const env = {
     offerTtlSeconds: Number(process.env.OFFER_TTL_SECONDS || 600),
     corsOrigin: process.env.CORS_ORIGIN || "http://localhost:5173",
     frontendUrl : process.env.FRONTEND_URL || "http://localhost:5173",
+
+    // Branding used in emails / QR payloads
+    appName: process.env.APP_NAME || "CineSeat",
+
+    // How often the TTL sweeper runs (seconds)
+    sweepIntervalSeconds: Number(process.env.SWEEP_INTERVAL_SECONDS || 30),
+
+    // SMTP for ticket / waitlist-offer emails. If SMTP_HOST is unset we fall
+    // back to an Ethereal test account (dev) and log a preview URL, so the app
+    // works end-to-end without any real mail credentials.
+    smtp: {
+        host: process.env.SMTP_HOST || "",
+        port: Number(process.env.SMTP_PORT || 587),
+        secure: process.env.SMTP_SECURE === "true",
+        user: process.env.SMTP_USER || "",
+        pass: process.env.SMTP_PASS || "",
+        from: process.env.MAIL_FROM || "CineSeat <no-reply@cineseat.app>",
+    },
 };

@@ -3,13 +3,16 @@
   import { registerUser, loginUser } from "./auth.service";
   import { requireAuth } from "../../middleware/auth";
   import { prisma } from "../../lib/prisma";
+  import { env } from "../../lib/env";
 
   const router = Router();
 
   const cookieOpts = {
     httpOnly: true,
-    sameSite: "lax" as const,
-    secure: false, // set true in production (HTTPS)
+    // Cross-site (Vercel <-> Render) needs SameSite=None + Secure; locally we
+    // stay on lax + insecure so the cookie works over http://localhost.
+    sameSite: (env.crossSiteCookies ? "none" : "lax") as "none" | "lax",
+    secure: env.crossSiteCookies, // "none" requires Secure; prod is HTTPS
     maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
   };
 

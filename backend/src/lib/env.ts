@@ -17,6 +17,12 @@ export const env = {
     corsOrigin: process.env.CORS_ORIGIN || "http://localhost:5173",
     frontendUrl : process.env.FRONTEND_URL || "http://localhost:5173",
 
+    // When frontend and backend live on different domains (e.g. Vercel + Render)
+    // the auth cookie must be SameSite=None; Secure to survive cross-site
+    // requests. Enable by setting CROSS_SITE_COOKIES=true in production.
+    // Left false locally so the cookie works over plain http://localhost.
+    crossSiteCookies: process.env.CROSS_SITE_COOKIES === "true",
+
     // Branding used in emails / QR payloads
     appName: process.env.APP_NAME || "CineSeat",
 

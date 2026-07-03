@@ -4,6 +4,8 @@ node_modules/
 # Environment Variables
 **/.env
 **/.env.*
+# ...but DO track the example templates (they hold no secrets, and are a deliverable)
+!**/.env.example
 
 # Logs
 *.log

@@ -6,6 +6,7 @@
   import cookieParser from "cookie-parser";
   import { env } from "./lib/env";
   import authRoutes from "./modules/auth/auth.routes";
+  import venueRoutes from "./modules/venues/venues.routes";
   import { errorHandler } from "./middleware/error";
 
   const app = express();
@@ -21,6 +22,8 @@
   });
 
   app.use("/auth", authRoutes);
+  
+  app.use("/venues",venueRoutes);
 
   app.use(errorHandler); // MUST be last
 

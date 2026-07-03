@@ -29,9 +29,11 @@ The database is pre-seeded with a catalogue (4 movies, 4 concerts, full seat gri
 
 ## 📸 Screenshots
 
-| Login | Seat selection | QR ticket |
+| Sign up / Login | Customer — browse & book | QR ticket |
 |:---:|:---:|:---:|
-| ![Login page](docs/screenshots/login.png) | ![Selecting seats on the visual map](docs/screenshots/seat-selection.png) | ![Confirmed booking with QR ticket](docs/screenshots/qr-ticket.png) |
+| ![Sign up and login](docs/screenshots/signup.png) | ![Customer browsing and booking seats](docs/screenshots/customer.png) | ![Confirmed booking with QR ticket](docs/screenshots/qr.png) |
+| **Waitlist (sold-out show)** | **Organiser dashboard** | **Admin — venues & seats** |
+| ![Joining the waitlist for a sold-out show](docs/screenshots/waitlist-lounge.png) | ![Organiser dashboard with revenue](docs/screenshots/organiser.png) | ![Admin managing venues and seat layout](docs/screenshots/admin.png) |
 
 ---
 
@@ -91,35 +93,15 @@ cp .env.example .env            # then set DATABASE_URL, JWT_SECRET
 npx prisma migrate deploy       # create tables
 npx prisma generate
 npx ts-node prisma/seed.ts      # seed the admin user
-npm run dev                     # http://localhost:5000
-```
+npm run dev                     
 
 ### Frontend
 ```bash
 cd frontend
 npm install
-npm run dev                     # http://localhost:5173
+npm run dev                     
 ```
 
 The Vite dev server proxies `/api` and `/socket.io` to the backend, so no extra config is needed locally.
 
 📖 **Full setup, environment variables, API reference, and DB schema:** [`backend/README.md`](./backend/README.md)
-
----
-
-## 🧠 How the core mechanisms work
-
-A concise summary — the full **800-word design write-up** is in [`backend/DESIGN.md`](./backend/DESIGN.md).
-
-- **Seat hold & TTL** — a hold is a single guarded `updateMany` that flips seats to `HELD` only if currently available (or an expired/own hold), stamping `holdExpiresAt = now + TTL`. A `node-cron` sweeper releases expired holds and emits a real-time update; the seat-map read also treats an expired hold as available, so the UI is never stale.
-- **Concurrency** — the winning condition lives in the SQL `WHERE` clause and the affected-row count is checked against the request. Postgres serialises the row writes, so of two racing requests exactly one matches; a mismatch rolls the transaction back with `409`. No partial holds or double-bookings are possible.
-- **Waitlist & time-limited offers** — a per-category FIFO queue. On cancellation each freed seat is *reserved* for the next waiter (held to them, offer-TTL) and a claim link is emailed. Accepting converts it to a booking; on expiry the sweeper frees the seat and re-offers it to the next in line.
-
----
-
-## 📦 Deliverables
-
-- ✅ Complete source code (this repo, branch `main`)
-- ✅ README with setup guide, `.env.example`, API docs, DB schema, seat-hold & waitlist explanation — see [`backend/README.md`](./backend/README.md)
-- ✅ Hosted application URL — https://cineseat-nine.vercel.app
-- ✅ System design write-up (≤800 words) — [`backend/DESIGN.md`](./backend/DESIGN.md)

@@ -210,7 +210,7 @@ export function SeatSelection() {
                     Continue to checkout <ArrowRight className="h-4 w-4" />
                   </Button>
                   <Button variant="ghost" className="w-full" onClick={() => releaseHold()}>
-                    Release seats
+                    Cancel ticket
                   </Button>
                 </>
               )}

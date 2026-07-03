@@ -120,7 +120,7 @@ export async function createBooking(userId: string, showId: string, seatIds: str
 
   emitSeatUpdate(showId);
   const full = await loadBooking(booking.id);
-  await emailTicket(full); // best-effort (never throws)
+  void emailTicket(full); // fire-and-forget — don't make the customer wait on the mail server
   return shapeBooking(full);
 }
 
@@ -228,6 +228,6 @@ export async function acceptOffer(userId: string, token: string) {
 
   emitSeatUpdate(entry.showId);
   const full = await loadBooking(booking.id);
-  await emailTicket(full);
+  void emailTicket(full); // fire-and-forget
   return shapeBooking(full);
 }

@@ -69,14 +69,27 @@ export function CreateShow() {
       </p>
 
       <form onSubmit={submit} className="mt-6 space-y-4">
-        <Select label="Event" value={eventId} onChange={(e) => setEventId(e.target.value)} required>
-          <option value="">Select an event…</option>
-          {events?.map((e) => (
-            <option key={e.id} value={e.id}>
-              {e.title} ({e.type})
-            </option>
-          ))}
-        </Select>
+        {events && events.length === 0 ? (
+          <div className="rounded-xl border border-amber-500/30 bg-amber-500/10 p-4 text-sm text-amber-200">
+            You haven't created any events yet — a show needs an event to belong to.
+            <button
+              type="button"
+              onClick={() => navigate('/organiser/events/new')}
+              className="mt-1 block font-semibold text-amber-100 underline hover:text-white"
+            >
+              Create your first event →
+            </button>
+          </div>
+        ) : (
+          <Select label="Event" value={eventId} onChange={(e) => setEventId(e.target.value)} required>
+            <option value="">Select an event…</option>
+            {events?.map((e) => (
+              <option key={e.id} value={e.id}>
+                {e.title} ({e.type})
+              </option>
+            ))}
+          </Select>
+        )}
 
         <Input
           label="Starts at"

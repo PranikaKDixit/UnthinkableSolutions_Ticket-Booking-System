@@ -4,10 +4,177 @@
 // Get a free hosted Postgres database in seconds: `npx create-db`
 
 generator client {
-  provider = "prisma-client"
-  output   = "../generated/prisma"
+  provider = "prisma-client-js"
 }
 
 datasource db {
   provider = "postgresql"
+  url= env("DATABASE_URL")
 }
+
+enum Role {
+  CUSTOMER
+  ORGANISER
+  ADMIN
+}
+
+enum EventType {
+  MOVIE
+  CONCERT
+}
+
+enum SeatStatus {
+  AVAILABLE
+  HELD
+  BOOKED
+}
+
+enum BookingStatus {
+  CONFIRMED
+  CANCELLED
+}
+
+enum WaitListStatus {
+  WAITING
+  OFFERED
+  CONVERTED
+  EXPIRED
+  CANCELLED
+}
+
+//--WHO--
+
+model User {
+  id String @id @default(cuid())
+  name String 
+  email String @unique
+  passwordHash String
+  role Role @default(CUSTOMER)
+  createdAt DateTime @default(now())
+  events Event[]
+  bookings Booking[]
+  waitlistEntries WaitlistEntry[]
+  heldSeats ShowSeat[]
+}
+
+//--WHERE--
+
+model Venue {
+  id String @id @default(cuid())
+  name String
+  address String
+  createdAt DateTime @default(now())
+
+  categories SeatCategory[]
+  seats Seat[]
+  events Event[] 
+}
+
+model SeatCategory {
+  id String @id @default(cuid())
+  venueId String
+  venue Venue @relation(fields: [venueId], references: [id], onDelete: Cascade)
+  name String 
+  rank Int @default(0) //1=Premium, 2= Standard etc
+  color String @default("#888888") 
+    seats     Seat[]
+    pricing   ShowPricing[]
+    waitlist  WaitlistEntry[]
+  }
+
+  model Seat {
+    id String @id @default(cuid())
+    venueId  String
+    venue Venue  @relation(fields: [venueId], references: [id], onDelete: Cascade)
+    categoryId String
+    category SeatCategory @relation(fields: [categoryId], references:[id])
+    rowLabel   String  // "A", "B", ...
+    seatNumber Int   // 1, 2, 3 ...
+    showSeats  ShowSeat[]
+    @@unique([venueId, rowLabel, seatNumber]) // no duplicate chairs in a room
+  }
+
+  //--WHAT--
+  model Event {
+    id String  @id @default(cuid())
+    organiserId String
+    organiser  User  @relation(fields: [organiserId], references: [id])
+    venueId  String
+    venue Venue @relation(fields: [venueId], references: [id])
+    type EventType
+    title String
+    description String  @default("")
+    createdAt   DateTime  @default(now())
+    shows Show[]
+  }
+
+  model Show {
+    id String @id @default(cuid())
+    eventId  String
+    event Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
+    startsAt DateTime 
+    pricing   ShowPricing[]
+    showSeats ShowSeat[]
+    bookings  Booking[]
+    waitlist  WaitlistEntry[]
+  }
+
+  model ShowPricing {
+    id  String  @id @default(cuid())
+    showId  String
+    show  Show  @relation(fields: [showId], references: [id], onDelete: Cascade)
+    categoryId String
+    category  SeatCategory @relation(fields: [categoryId], references:[id])
+    price   Int      
+    @@unique([showId, categoryId]) // one price per category per show
+  }
+
+  //--ACTION --
+  model ShowSeat {
+    id  String  @id @default(cuid())
+    showId String
+    show   Show   @relation(fields: [showId], references: [id], onDelete: Cascade)
+    seatId   String
+    seat  Seat   @relation(fields: [seatId], references: [id])
+    status  SeatStatus @default(AVAILABLE)
+
+    heldById      String?
+    heldBy        User?      @relation(fields: [heldById], references: [id])
+    holdExpiresAt DateTime?  // when a HELD seat auto-releases
+
+    bookingId     String?
+    booking       Booking?   @relation(fields: [bookingId], references:[id])
+
+    @@unique([showId, seatId]) // exactly ONE status row per seat per show
+  }
+
+  model Booking {
+    id          String        @id @default(cuid())
+    reference   String        @unique // encoded into the QR code
+    userId      String
+    user        User          @relation(fields: [userId], references: [id])
+    showId      String
+    show        Show          @relation(fields: [showId], references: [id])
+    status      BookingStatus @default(CONFIRMED)
+    totalAmount Int
+    createdAt   DateTime      @default(now())
+
+    seats ShowSeat[]
+  }
+
+  model WaitlistEntry {
+    id            String         @id @default(cuid())
+    showId        String
+    show          Show           @relation(fields: [showId], references: [id], onDelete: Cascade)
+    categoryId    String
+    category      SeatCategory   @relation(fields: [categoryId], references: [id])
+    userId        String
+    user          User           @relation(fields: [userId], references: [id])
+    position      Int            // queue order
+    status        WaitListStatus @default(WAITING)
+    offerToken    String?        @unique // the time-limited link token
+    offerExpiresAt DateTime?
+    createdAt     DateTime       @default(now())
+  }
+
+
